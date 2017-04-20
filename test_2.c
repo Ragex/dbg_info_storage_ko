@@ -2,6 +2,7 @@
 #include <linux/kernel.h>
 #include <linux/proc_fs.h>
 #include <linux/slab.h>
+#include <linux/string.h>
 #include <asm/uaccess.h>
 
 
@@ -73,11 +74,14 @@ module_input(struct file *filp, const char *buffer, size_t length, loff_t * offs
              tmpBuff = (char*)kmalloc(MESSAGE_LENGTH+length,GFP_ATOMIC);
              memcpy(tmpBuff, Message, sizeof(Message));
              tmpBuff[dataEndIdx] = '\n';
-             memcpy(tmpBuff+dataEndIdx+1, buffer, sizeof(length));
+             
+             for(i = 0; i < length; i++)
+                 get_user(tmpBuff[dataEndIdx+1+i], buffer+i);
              
              memcpy(Message,tmpBuff+(sizeof(tmpBuff)-sizeof(Message)),sizeof(Message));
              
              dataEndIdx = MESSAGE_LENGTH-1;
+             Message[dataEndIdx] = '\0';
              
              kfree(tmpBuff);
              
